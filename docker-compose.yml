@@ -1,0 +1,83 @@
+services:
+  api:
+    image: rudraaralikatti1996pma/reconnect-api:v3
+    container_name: reconnect-api
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    env_file:
+      - ./api/.env
+
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:latest
+    container_name: web-server
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    ports:
+      - "80:80"
+
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+
+    depends_on:
+      api:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    container_name: postgres-db
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d reconnectdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: reconnectdb
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+
+    ports:
+      - "5050:80"
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

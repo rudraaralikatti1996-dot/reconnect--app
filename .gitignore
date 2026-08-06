@@ -1,0 +1,27 @@
+# Node.js
+api/node_modules/
+api/npm-debug.log
+
+# Environment variables
+api/.env
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+**/.dockerignore.old
+
+# Terraform (for future)
+*.tfstate
+*.tfstate.*
+
+# Kubernetes
+*.secret.yaml
