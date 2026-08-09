@@ -28,5 +28,11 @@ pipeline {
                 sh 'docker --version'
             }
         }
+        stage('Check Node') {
+    steps {
+        sh 'node --version'
+        sh 'npm --version'
+    }
+}
     }
 }
