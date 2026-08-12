@@ -43,5 +43,13 @@ pipeline {
                 }
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('api') {
+                    sh 'docker build -t reconnect-api:ci .'
+                }
+            }
+        }
     }
 }
