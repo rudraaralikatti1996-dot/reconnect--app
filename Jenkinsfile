@@ -108,13 +108,15 @@ pipeline {
         }
 
         stage('Deploy') {
-            steps {
-                sh '''
-                    cd /home/ubuntu/reconnect-app
+    steps {
+        sh '''
+            IMAGE_TAG=$BUILD_NUMBER docker compose \
+                -f /home/ubuntu/reconnect-app/docker-compose.yml \
+                pull api
 
-                    IMAGE_TAG=$BUILD_NUMBER docker compose pull api
-
-                    IMAGE_TAG=$BUILD_NUMBER docker compose up -d
+            IMAGE_TAG=$BUILD_NUMBER docker compose \
+                -f /home/ubuntu/reconnect-app/docker-compose.yml \
+                up -d
                 '''
             }
         }
