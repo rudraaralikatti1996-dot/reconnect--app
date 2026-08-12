@@ -35,5 +35,13 @@ pipeline {
                 sh 'npm --version'
             }
         }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('api') {
+                    sh 'npm ci'
+                }
+            }
+        }
     }
 }
