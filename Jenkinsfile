@@ -51,5 +51,23 @@ pipeline {
                 }
             }
         }
+
+        stage('Test Docker Image') {
+            steps {
+                sh '''
+                    docker run -d \
+                        --name reconnect-api-test \
+                        -p 3001:3000 \
+                        reconnect-api:ci
+
+                    sleep 5
+
+                    curl -f http://localhost:3001
+
+                    docker stop reconnect-api-test
+                    docker rm reconnect-api-test
+                '''
+            }
+        }
     }
 }
