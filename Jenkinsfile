@@ -47,7 +47,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 dir('api') {
-                    sh 'docker build -t reconnect-api:ci .'
+                    sh '''
+                        docker build \
+                            -t reconnect-api:${BUILD_NUMBER} \
+                            .
+                    '''
                 }
             }
         }
@@ -58,7 +62,7 @@ pipeline {
                     docker run -d \
                         --name reconnect-api-test \
                         -p 3001:3000 \
-                        reconnect-api:ci
+                        reconnect-api:${BUILD_NUMBER}
 
                     sleep 5
 
@@ -90,11 +94,12 @@ pipeline {
                             -u "$DOCKER_USERNAME" \
                             --password-stdin
 
-                        docker tag reconnect-api:ci \
-                            "$DOCKER_USERNAME/reconnect-api:ci"
+                        docker tag \
+                            reconnect-api:${BUILD_NUMBER} \
+                            "$DOCKER_USERNAME/reconnect-api:${BUILD_NUMBER}"
 
                         docker push \
-                            "$DOCKER_USERNAME/reconnect-api:ci"
+                            "$DOCKER_USERNAME/reconnect-api:${BUILD_NUMBER}"
 
                         docker logout
                     '''
