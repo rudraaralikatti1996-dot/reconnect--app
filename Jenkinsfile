@@ -46,14 +46,27 @@ pipeline {
 
         stage('Automated API Tests') {
             steps {
-                sh '''
-                    docker run --rm \
-                        --network reconnect-app_default \
-                        -v "$WORKSPACE/api:/app" \
-                        -w /app \
-                        node:22-alpine \
-                        sh -c "npm ci && npm test"
-                '''
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'reconnect-db-credentials',
+                        usernameVariable: 'DB_USER',
+                        passwordVariable: 'DB_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        docker run --rm \
+                            --network reconnect-app_default \
+                            -e DB_HOST=postgres-db \
+                            -e DB_PORT=5432 \
+                            -e DB_USER="$DB_USER" \
+                            -e DB_PASSWORD="$DB_PASSWORD" \
+                            -e DB_NAME=reconnectdb \
+                            -v "$WORKSPACE/api:/app" \
+                            -w /app \
+                            node:22-alpine \
+                            sh -c "npm ci && npm test"
+                    '''
+                }
             }
         }
 
