@@ -44,6 +44,19 @@ pipeline {
             }
         }
 
+        stage('Automated API Tests') {
+            steps {
+                sh '''
+                    docker run --rm \
+                        --network reconnect-app_default \
+                        -v "$WORKSPACE/api:/app" \
+                        -w /app \
+                        node:22-alpine \
+                        sh -c "npm ci && npm test"
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 dir('api') {
@@ -108,15 +121,15 @@ pipeline {
         }
 
         stage('Deploy') {
-    steps {
-        sh '''
-            IMAGE_TAG=$BUILD_NUMBER docker compose \
-                -f /home/ubuntu/reconnect-app/docker-compose.yml \
-                pull api
+            steps {
+                sh '''
+                    IMAGE_TAG=$BUILD_NUMBER docker compose \
+                        -f /home/ubuntu/reconnect-app/docker-compose.yml \
+                        pull api
 
-            IMAGE_TAG=$BUILD_NUMBER docker compose \
-                -f /home/ubuntu/reconnect-app/docker-compose.yml \
-                up -d
+                    IMAGE_TAG=$BUILD_NUMBER docker compose \
+                        -f /home/ubuntu/reconnect-app/docker-compose.yml \
+                        up -d
                 '''
             }
         }

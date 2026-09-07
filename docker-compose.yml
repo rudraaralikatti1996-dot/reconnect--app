@@ -1,6 +1,6 @@
 services:
   api:
-    image: rudraaralikatti1996pma/reconnect-api:v3
+    image: rudraaralikatti1996pma/reconnect-api:${IMAGE_TAG:-v3}
     container_name: reconnect-api
     restart: unless-stopped
 
@@ -62,6 +62,7 @@ services:
 
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   pgadmin:
     image: dpage/pgadmin4
