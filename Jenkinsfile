@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -46,6 +47,21 @@ pipeline {
                     )
                 ]) {
                     sh '''
+                        set -e
+
+                        TEST_DIR=$(mktemp -d)
+
+                        cleanup() {
+                            rm -rf "$TEST_DIR"
+                        }
+
+                        trap cleanup EXIT
+
+                        echo "Creating isolated test workspace..."
+                        cp -R "$WORKSPACE/api/." "$TEST_DIR/"
+
+                        echo "Running automated API tests..."
+
                         docker run --rm \
                             --network reconnect-app_default \
                             -e DB_HOST=postgres-db \
@@ -53,8 +69,7 @@ pipeline {
                             -e DB_USER="$DB_USER" \
                             -e DB_PASSWORD="$DB_PASSWORD" \
                             -e DB_NAME=reconnectdb \
-                            -v "$WORKSPACE/api:/app:ro" \
-                            -v /app/node_modules \
+                            -v "$TEST_DIR:/app" \
                             -w /app \
                             node:22-alpine \
                             sh -c "npm ci && npm test"
@@ -141,3 +156,4 @@ pipeline {
         }
     }
 }
+```
