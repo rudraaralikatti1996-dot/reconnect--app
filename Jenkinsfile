@@ -72,7 +72,7 @@ pipeline {
                             -v "$TEST_DIR:/app" \
                             -w /app \
                             node:22-alpine \
-                            sh -c "npm ci && npm test"
+sh -c "npm ci --cache /app/.npm-cache && npm test"
                     '''
                 }
             }
