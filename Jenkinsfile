@@ -62,6 +62,7 @@ pipeline {
                         echo "Running automated API tests..."
 
                         docker run --rm \
+                            --user "$(id -u):$(id -g)" \
                             --network reconnect-app_default \
                             -e DB_HOST=postgres-db \
                             -e DB_PORT=5432 \
@@ -81,9 +82,15 @@ pipeline {
             steps {
                 dir('api') {
                     sh '''
+                        set -e
+
+                        echo "Building Reconnect API Docker image..."
+
                         docker build \
                             -t reconnect-api:${BUILD_NUMBER} \
                             .
+
+                        echo "Docker image build successful!"
                     '''
                 }
             }
@@ -92,20 +99,33 @@ pipeline {
         stage('Test Docker Image') {
             steps {
                 sh '''
+                    set -e
+
+                    echo "Starting Docker container for testing..."
+
                     docker run -d \
                         --name reconnect-api-test \
                         -p 3001:3000 \
                         reconnect-api:${BUILD_NUMBER}
 
+                    echo "Waiting for application to start..."
+
                     sleep 5
 
+                    echo "Testing Reconnect API..."
+
                     curl -f http://localhost:3001
+
+                    echo ""
+                    echo "Docker image test successful!"
                 '''
             }
 
             post {
                 always {
                     sh '''
+                        echo "Cleaning up test container..."
+
                         docker stop reconnect-api-test 2>/dev/null || true
                         docker rm reconnect-api-test 2>/dev/null || true
                     '''
@@ -123,16 +143,26 @@ pipeline {
                     )
                 ]) {
                     sh '''
+                        set -e
+
+                        echo "Logging in to Docker Hub..."
+
                         echo "$DOCKER_PASSWORD" | docker login \
                             -u "$DOCKER_USERNAME" \
                             --password-stdin
+
+                        echo "Tagging Docker image..."
 
                         docker tag \
                             reconnect-api:${BUILD_NUMBER} \
                             "$DOCKER_USERNAME/reconnect-api:${BUILD_NUMBER}"
 
+                        echo "Pushing Docker image..."
+
                         docker push \
                             "$DOCKER_USERNAME/reconnect-api:${BUILD_NUMBER}"
+
+                        echo "Docker image pushed successfully!"
 
                         docker logout
                     '''
@@ -143,6 +173,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
+                    set -e
+
+                    echo "Deploying Reconnect application..."
+
                     IMAGE_TAG=$BUILD_NUMBER docker compose \
                         -f /home/ubuntu/reconnect-app/docker-compose.yml \
                         pull api
@@ -150,8 +184,29 @@ pipeline {
                     IMAGE_TAG=$BUILD_NUMBER docker compose \
                         -f /home/ubuntu/reconnect-app/docker-compose.yml \
                         up -d
+
+                    echo "Deployment completed successfully!"
                 '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo '========================================='
+            echo 'Reconnect App CI/CD Pipeline SUCCESSFUL!'
+            echo '========================================='
+        }
+
+        failure {
+            echo '========================================='
+            echo 'Reconnect App CI/CD Pipeline FAILED!'
+            echo 'Check the failed stage and Jenkins console output.'
+            echo '========================================='
+        }
+
+        always {
+            echo 'Pipeline execution completed.'
         }
     }
 }
