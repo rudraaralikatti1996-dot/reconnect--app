@@ -36,14 +36,6 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                dir('api') {
-                    sh 'npm ci'
-                }
-            }
-        }
-
         stage('Automated API Tests') {
             steps {
                 withCredentials([
@@ -61,7 +53,8 @@ pipeline {
                             -e DB_USER="$DB_USER" \
                             -e DB_PASSWORD="$DB_PASSWORD" \
                             -e DB_NAME=reconnectdb \
-                            -v "$WORKSPACE/api:/app" \
+                            -v "$WORKSPACE/api:/app:ro" \
+                            -v /app/node_modules \
                             -w /app \
                             node:22-alpine \
                             sh -c "npm ci && npm test"
