@@ -14,7 +14,7 @@ const pool = new Pool({
 });
 
 app.get("/", (req, res) => {
-  res.send("Reconnect API is running!");
+  res.send("Reconnect API is running - CI/CD deployment successful!");
 });
 
 app.get("/employees", async (req, res) => {
