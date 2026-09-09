@@ -87,13 +87,17 @@ sh -c "npm ci --cache /app/.npm-cache && npm test"
                     sh '''
                         set -e
 
+                        IMAGE_TAG=$(git rev-parse --short HEAD)
+
+                        echo "Git commit: $IMAGE_TAG"
                         echo "Building Reconnect API Docker image..."
 
                         docker build \
-                            -t reconnect-api:${BUILD_NUMBER} \
+                            -t reconnect-api:$IMAGE_TAG \
                             .
 
                         echo "Docker image build successful!"
+                        echo "Docker image: reconnect-api:$IMAGE_TAG"
                     '''
                 }
             }
