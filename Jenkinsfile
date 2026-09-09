@@ -321,6 +321,7 @@ stage('Deploy') {
             echo "API endpoint: responding"
         '''
     }
+  }
 }
     post {
         success {
