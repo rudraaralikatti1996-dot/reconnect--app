@@ -90,6 +90,7 @@ sh -c "npm ci --cache /app/.npm-cache && npm test"
                         IMAGE_TAG=$(git rev-parse --short HEAD)
 
                         echo "Git commit: $IMAGE_TAG"
+
                         echo "Building Reconnect API Docker image..."
 
                         docker build \
@@ -108,12 +109,16 @@ sh -c "npm ci --cache /app/.npm-cache && npm test"
                 sh '''
                     set -e
 
+                    IMAGE_TAG=$(git rev-parse --short HEAD)
+
+                    echo "Git commit: $IMAGE_TAG"
+
                     echo "Starting Docker container for testing..."
 
                     docker run -d \
                         --name reconnect-api-test \
                         -p 3001:3000 \
-                        reconnect-api:${BUILD_NUMBER}
+                        reconnect-api:$IMAGE_TAG
 
                     echo "Waiting for application to start..."
 
@@ -152,6 +157,10 @@ sh -c "npm ci --cache /app/.npm-cache && npm test"
                     sh '''
                         set -e
 
+                        IMAGE_TAG=$(git rev-parse --short HEAD)
+
+                        echo "Git commit: $IMAGE_TAG"
+
                         echo "Logging in to Docker Hub..."
 
                         echo "$DOCKER_PASSWORD" | docker login \
@@ -161,13 +170,13 @@ sh -c "npm ci --cache /app/.npm-cache && npm test"
                         echo "Tagging Docker image..."
 
                         docker tag \
-                            reconnect-api:${BUILD_NUMBER} \
-                            "$DOCKER_USERNAME/reconnect-api:${BUILD_NUMBER}"
+                            reconnect-api:$IMAGE_TAG \
+                            "$DOCKER_USERNAME/reconnect-api:$IMAGE_TAG"
 
                         echo "Pushing Docker image..."
 
                         docker push \
-                            "$DOCKER_USERNAME/reconnect-api:${BUILD_NUMBER}"
+                            "$DOCKER_USERNAME/reconnect-api:$IMAGE_TAG"
 
                         echo "Docker image pushed successfully!"
 
@@ -182,13 +191,17 @@ sh -c "npm ci --cache /app/.npm-cache && npm test"
                 sh '''
                     set -e
 
+                    IMAGE_TAG=$(git rev-parse --short HEAD)
+
+                    echo "Git commit: $IMAGE_TAG"
+
                     echo "Deploying Reconnect application..."
 
-                    IMAGE_TAG=$BUILD_NUMBER docker compose \
+                    IMAGE_TAG=$IMAGE_TAG docker compose \
                         -f /home/ubuntu/reconnect-app/docker-compose.yml \
                         pull api
 
-                    IMAGE_TAG=$BUILD_NUMBER docker compose \
+                    IMAGE_TAG=$IMAGE_TAG docker compose \
                         -f /home/ubuntu/reconnect-app/docker-compose.yml \
                         up -d
 
