@@ -57,7 +57,10 @@ pipeline {
                         trap cleanup EXIT
 
                         echo "Creating isolated test workspace..."
-                        cp -R "$WORKSPACE/api/." "$TEST_DIR/"
+                        rsync -a \
+                            --exclude='node_modules' \
+                            --exclude='.env' \
+                            "$WORKSPACE/api/" "$TEST_DIR/"
 
                         echo "Running automated API tests..."
 
