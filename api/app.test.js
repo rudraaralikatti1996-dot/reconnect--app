@@ -7,7 +7,7 @@ describe("Reconnect API", () => {
     const response = await request(app).get("/");
 
     expect(response.statusCode).toBe(200);
-    expect(response.text).toBe("Reconnect API is running - CI/CD deployment sucessfull!");
+    expect(response.text).toBe("Reconnect API is running - CI/CD deployment successful!");
   });
 
   test("GET /employees should return employees", async () => {
